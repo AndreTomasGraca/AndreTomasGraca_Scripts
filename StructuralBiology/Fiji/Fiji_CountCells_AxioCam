@@ -1,0 +1,41 @@
+run("16-bit");
+getHistogram(values, counts, 65536); // Get the histogram data for 16-bit images (65536 bins)
+totalPixels = 0;
+for (i = 0; i < 65536; i++) {
+    totalPixels += counts[i];
+} // Calculate the total number of pixels
+cumulativeSum = 0;
+targetPixels = totalPixels * 0.01; // Find the threshold that includes the top 1% of pixels
+for (i = 65535; i >= 0; i--) { // Start from the highest intensity
+    cumulativeSum += counts[i];
+    if (cumulativeSum >= targetPixels) {
+        lowerThreshold = i;
+        break;
+    }
+}
+
+upperThreshold = 65535; // Keep upper threshold at max for 16-bit images
+setThreshold(lowerThreshold, upperThreshold); // Apply the calculated threshold
+setOption("BlackBackground", true);
+run("Convert to Mask");
+run("Gaussian Blur...", "sigma=10");
+getHistogram(values, counts, 256); // Get the histogram data for 8-bit images (256 bins)
+totalPixels = 0;
+for (i = 0; i < 256; i++) {
+    totalPixels += counts[i];
+} // Calculate the total number of pixels
+cumulativeSum = 0;
+targetPixels = totalPixels * 0.023; // Find the threshold that includes the top 2.3% of pixels
+for (i = 255; i >= 0; i--) { // Start from the highest intensity
+    cumulativeSum += counts[i];
+    if (cumulativeSum >= targetPixels) {
+        lowerThreshold = i;
+        break;
+    }
+}
+
+upperThreshold = 256; // Keep upper threshold at max for 8-bit images
+setThreshold(lowerThreshold, upperThreshold); // Apply the calculated threshold
+setOption("BlackBackground", true);
+run("Convert to Mask");
+run("Analyze Particles...", "size=40-Infinity show=Outlines display exclude clear summarize");
